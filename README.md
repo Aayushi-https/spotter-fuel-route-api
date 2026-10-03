@@ -41,8 +41,5 @@ OpenStreetMap Nominatim is used for geocoding and OSRM for driving directions. N
 4. Project stations onto the route and keep nearby candidates.
 5. Use dynamic programming to select a reachable cost-effective sequence.
 
-## Loom demo
-Show the health endpoint, then Chicago → Denver in Postman, then briefly explain `routing/services.py`, the 500-mile constraint, local CSV, caching, and tests. Keep the recording under five minutes.
-
 ## Note
 The real Spotter CSV is not included here because it is assessment-provided data. Copy it into `data/fuel_prices.csv` before testing the route endpoint.
