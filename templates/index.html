@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Route Planner</title>
+
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        .navbar {
+            height: 70px;
+            background: #ffffff;
+            border-bottom: 1px solid #e8ebf0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 7%;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 55px 20px 35px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e8f0ff;
+            color: #2563eb;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .hero h1 {
+            margin: 0;
+            font-size: 44px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: 16px auto 0;
+            color: #667085;
+            font-size: 17px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 86%;
+            max-width: 1250px;
+            margin: auto;
+        }
+
+        .search-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #344054;
+        }
+
+        input {
+            width: 100%;
+            height: 50px;
+            padding: 0 15px;
+            border: 1px solid #d0d5dd;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        button {
+            height: 50px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error {
+            display: none;
+            margin-top: 15px;
+            padding: 13px;
+            border-radius: 10px;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 35px;
+            color: #667085;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 18px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 22px;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .panel-header p {
+            margin: 6px 0 0;
+            color: #667085;
+            font-size: 13px;
+        }
+
+        .stops {
+            padding: 10px 20px 20px;
+        }
+
+        .stop {
+            display: flex;
+            gap: 15px;
+            padding: 17px 0;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .stop:last-child {
+            border-bottom: none;
+        }
+
+        .stop-number {
+            width: 34px;
+            height: 34px;
+            min-width: 34px;
+            border-radius: 50%;
+            background: #e8f0ff;
+            color: #2563eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+        }
+
+        .stop-info {
+            flex: 1;
+        }
+
+        .stop-name {
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .stop-location {
+            color: #667085;
+            font-size: 13px;
+            margin-bottom: 9px;
+        }
+
+        .stop-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-weight: 800;
+            color: #16a34a;
+        }
+
+        .mile {
+            font-size: 12px;
+            color: #667085;
+        }
+
+        /* MAP */
+
+        #map {
+            width: 100%;
+            height: 560px;
+            min-height: 560px;
+        }
+
+        .leaflet-container {
+            font-family: Inter, Arial, sans-serif;
+        }
+
+        .map-legend {
+            background: white;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .start-dot {
+            background: #16a34a;
+        }
+
+        .fuel-dot {
+            background: #f59e0b;
+        }
+
+        .destination-dot {
+            background: #dc2626;
+        }
+
+        .custom-marker {
+            width: 34px;
+            height: 34px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .custom-marker span {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .start-marker {
+            background: #16a34a;
+        }
+
+        .fuel-marker {
+            background: #f59e0b;
+        }
+
+        .destination-marker {
+            background: #dc2626;
+        }
+
+        .journey {
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .journey-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .journey-item {
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .journey-label {
+            color: #667085;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 7px;
+        }
+
+        .journey-value {
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+        }
+
+        .stat-label {
+            color: #667085;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        @media (max-width: 1000px) {
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                height: 500px;
+                min-height: 500px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .navbar {
+                padding: 0 5%;
+            }
+
+            .brand {
+                font-size: 18px;
+            }
+
+            .inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 34px;
+            }
+
+            .container {
+                width: 94%;
+            }
+
+            .journey-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            #map {
+                height: 420px;
+                min-height: 420px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <div class="brand">
+        ⛽ Spotter Route Planner
+    </div>
+
+    <div class="status">
+        <span class="status-dot"></span>
+        API Online
+    </div>
+
+</nav>
+
+
+<section class="hero">
+
+    <div class="badge">
+        Fuel Route Optimization
+    </div>
+
+    <h1>
+        Plan smarter.<br>
+        Drive farther.
+    </h1>
+
+    <p>
+        Find an efficient route and identify optimal fuel stops
+        based on vehicle range, fuel prices and route distance.
+    </p>
+
+</section>
+
+
+<main class="container">
+
+    <div class="search-card">
+
+        <div class="inputs">
+
+            <div>
+
+                <label>
+                    Starting location
+                </label>
+
+                <input
+                    id="start"
+                    type="text"
+                    placeholder="Chicago, IL"
+                    value="Chicago, IL"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Destination
+                </label>
+
+                <input
+                    id="finish"
+                    type="text"
+                    placeholder="Denver, CO"
+                    value="Denver, CO"
+                >
+
+            </div>
+
+
+            <button id="calculate">
+                Calculate Route →
+            </button>
+
+        </div>
+
+
+        <div id="error" class="error"></div>
+
+    </div>
+
+
+    <div id="loading" class="loading">
+
+        Calculating route and optimizing fuel stops...
+
+    </div>
+
+
+    <section id="results" class="results">
+
+        <h2 class="section-title">
+            Optimal Fuel Stops
+        </h2>
+
+
+        <div class="layout">
+
+
+            <!-- FUEL STOPS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h2 id="stop-count">
+                        Fuel Stops
+                    </h2>
+
+                    <p>
+                        Recommended stops along your route
+                    </p>
+
+                </div>
+
+
+                <div id="stops" class="stops"></div>
+
+            </div>
+
+
+            <!-- MAP -->
+
+            <div class="panel">
+
+                <div id="map"></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- JOURNEY -->
+
+        <div class="panel journey">
+
+            <h2 class="section-title">
+                Journey
+            </h2>
+
+
+            <div class="journey-grid">
+
+                <div class="journey-item">
+
+                    <div class="journey-label">
+                        Start
+                    </div>
+
+                    <div
+                        id="journey-start"
+                        class="journey-value">
+                    </div>
+
+                </div>
+
+
+                <div class="journey-item">
+
+                    <div class="journey-label">
+                        Destination
+                    </div>
+
+                    <div
+                        id="journey-finish"
+                        class="journey-value">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        Distance
+                    </div>
+
+                    <div
+                        id="distance"
+                        class="stat-value">
+                        —
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        Fuel Economy
+                    </div>
+
+                    <div class="stat-value">
+                        10 MPG
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        Maximum Range
+                    </div>
+
+                    <div class="stat-value">
+                        500 mi
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        Estimated Fuel Cost
+                    </div>
+
+                    <div
+                        id="fuel-cost"
+                        class="stat-value">
+                        $0.00
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- Leaflet -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<script>
+
+let map = null;
+let routeLayer = null;
+let markersLayer = null;
+
+
+const calculateButton =
+    document.getElementById("calculate");
+
+const results =
+    document.getElementById("results");
+
+const loading =
+    document.getElementById("loading");
+
+const errorBox =
+    document.getElementById("error");
+
+
+calculateButton.addEventListener(
+    "click",
+    calculateRoute
+);
+
+
+/* Allow Enter key */
+
+document
+    .getElementById("start")
+    .addEventListener("keydown", function(event) {
+
+        if (event.key === "Enter") {
+            calculateRoute();
+        }
+
+    });
+
+
+document
+    .getElementById("finish")
+    .addEventListener("keydown", function(event) {
+
+        if (event.key === "Enter") {
+            calculateRoute();
+        }
+
+    });
+
+
+async function calculateRoute() {
+
+    const start =
+        document.getElementById("start")
+            .value
+            .trim();
+
+    const finish =
+        document.getElementById("finish")
+            .value
+            .trim();
+
+
+    if (!start || !finish) {
+
+        showError(
+            "Please enter both starting location and destination."
+        );
+
+        return;
+    }
+
+
+    hideError();
+
+    loading.style.display = "block";
+
+    results.style.display = "none";
+
+    calculateButton.disabled = true;
+
+
+    try {
+
+        const url =
+            `/api/route/?start=${encodeURIComponent(start)}&finish=${encodeURIComponent(finish)}`;
+
+
+        const response =
+            await fetch(url);
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to calculate route."
+            );
+
+        }
+
+
+        renderResults(data);
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showError(
+            error.message ||
+            "Something went wrong."
+        );
+
+    } finally {
+
+        loading.style.display = "none";
+
+        calculateButton.disabled = false;
+
+    }
+
+}
+
+
+function renderResults(data) {
+
+    results.style.display = "block";
+
+
+    const route =
+        data.route;
+
+    const fuelPlan =
+        data.fuel_plan;
+
+
+    document.getElementById(
+        "journey-start"
+    ).textContent =
+        data.start.display_name ||
+        data.start.query;
+
+
+    document.getElementById(
+        "journey-finish"
+    ).textContent =
+        data.finish.display_name ||
+        data.finish.query;
+
+
+    document.getElementById(
+        "fuel-cost"
+    ).textContent =
+        `$${Number(
+            fuelPlan.total_fuel_cost_usd
+        ).toFixed(2)}`;
+
+
+    document.getElementById(
+        "distance"
+    ).textContent =
+        `${Number(
+            route.distance_miles
+        ).toFixed(1)} mi`;
+
+
+    document.getElementById(
+        "stop-count"
+    ).textContent =
+        `${fuelPlan.stops.length} Fuel Stop${
+            fuelPlan.stops.length === 1
+                ? ""
+                : "s"
+        }`;
+
+
+    renderStops(
+        fuelPlan.stops
+    );
+
+
+    /*
+     * Wait until results are visible
+     * before creating Leaflet map.
+     */
+
+    requestAnimationFrame(() => {
+
+        renderMap(data);
+
+    });
+
+}
+
+
+function renderStops(stops) {
+
+    const container =
+        document.getElementById("stops");
+
+
+    container.innerHTML = "";
+
+
+    if (!stops || stops.length === 0) {
+
+        container.innerHTML = `
+
+            <div style="
+                padding:25px 0;
+                color:#667085;
+                text-align:center;
+            ">
+
+                No fuel stops are required
+                for this route.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    stops.forEach(
+        (stop, index) => {
+
+            const div =
+                document.createElement("div");
+
+
+            div.className =
+                "stop";
+
+
+            div.innerHTML = `
+
+                <div class="stop-number">
+                    ${index + 1}
+                </div>
+
+
+                <div class="stop-info">
+
+                    <div class="stop-name">
+                        ${escapeHtml(stop.name)}
+                    </div>
+
+
+                    <div class="stop-location">
+
+                        ${escapeHtml(stop.city)},
+                        ${escapeHtml(stop.state)}
+
+                        ·
+
+                        ${Number(
+                            stop.distance_from_route_miles
+                        ).toFixed(2)}
+
+                        mi off route
+
+                    </div>
+
+
+                    <div class="stop-meta">
+
+                        <span class="price">
+
+                            $${Number(
+                                stop.fuel_price_per_gallon
+                            ).toFixed(3)}
+
+                        </span>
+
+
+                        <span class="mile">
+
+                            Mile
+                            ${Number(
+                                stop.route_mile
+                            ).toFixed(1)}
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `;
+
+
+            container.appendChild(div);
+
+        }
+    );
+
+}
+
+
+function createMarkerIcon(
+    type,
+    text
+) {
+
+    return L.divIcon({
+
+        className: "",
+
+        html: `
+
+            <div class="custom-marker ${type}-marker">
+
+                <span>
+                    ${text}
+                </span>
+
+            </div>
+
+        `,
+
+        iconSize: [
+            34,
+            34
+        ],
+
+        iconAnchor: [
+            17,
+            34
+        ],
+
+        popupAnchor: [
+            0,
+            -34
+        ]
+
+    });
+
+}
+
+
+function renderMap(data) {
+
+    const route =
+        data.route;
+
+
+    if (
+        !route ||
+        !route.geometry ||
+        route.geometry.type !== "LineString" ||
+        !Array.isArray(
+            route.geometry.coordinates
+        ) ||
+        route.geometry.coordinates.length < 2
+    ) {
+
+        showError(
+            "The API returned an invalid route geometry."
+        );
+
+        return;
+    }
+
+
+    /*
+     * CREATE MAP ONCE
+     */
+
+    if (!map) {
+
+        map =
+            L.map("map", {
+                zoomControl: true,
+                attributionControl: true
+            });
+
+
+        /*
+         * IMPORTANT:
+         *
+         * We are NOT using CARTO.
+         *
+         * Esri tiles do not require
+         * a CARTO API key.
+         */
+
+        L.tileLayer(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+            {
+
+                maxZoom: 19,
+
+                attribution:
+                    "Tiles &copy; Esri — Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), TomTom, MapmyIndia, OpenStreetMap contributors, and the GIS User Community"
+
+            }
+        ).addTo(map);
+
+
+        markersLayer =
+            L.layerGroup()
+                .addTo(map);
+
+
+        /*
+         * Legend
+         */
+
+        const legend =
+            L.control({
+                position: "bottomleft"
+            });
+
+
+        legend.onAdd =
+            function() {
+
+                const div =
+                    L.DomUtil.create(
+                        "div",
+                        "map-legend"
+                    );
+
+
+                div.innerHTML = `
+
+                    <div class="legend-row">
+
+                        <span class="
+                            legend-dot
+                            start-dot
+                        "></span>
+
+                        Start
+
+                    </div>
+
+
+                    <div class="legend-row">
+
+                        <span class="
+                            legend-dot
+                            fuel-dot
+                        "></span>
+
+                        Fuel stop
+
+                    </div>
+
+
+                    <div class="legend-row">
+
+                        <span class="
+                            legend-dot
+                            destination-dot
+                        "></span>
+
+                        Destination
+
+                    </div>
+
+                `;
+
+
+                return div;
+
+            };
+
+
+        legend.addTo(map);
+
+    }
+
+
+    /*
+     * Remove previous route
+     */
+
+    if (routeLayer) {
+
+        map.removeLayer(
+            routeLayer
+        );
+
+        routeLayer = null;
+
+    }
+
+
+    /*
+     * Remove previous markers
+     */
+
+    if (markersLayer) {
+
+        markersLayer.clearLayers();
+
+    }
+
+
+    /*
+     * Convert OSRM coordinates
+     *
+     * [longitude, latitude]
+     *
+     * into Leaflet
+     *
+     * [latitude, longitude]
+     */
+
+    const latLngs =
+        route.geometry.coordinates
+
+            .filter(
+                coord =>
+                    Array.isArray(coord) &&
+                    coord.length >= 2 &&
+                    Number.isFinite(
+                        Number(coord[0])
+                    ) &&
+                    Number.isFinite(
+                        Number(coord[1])
+                    )
+            )
+
+            .map(
+                coord => [
+
+                    Number(coord[1]),
+
+                    Number(coord[0])
+
+                ]
+            );
+
+
+    if (latLngs.length < 2) {
+
+        showError(
+            "The route contains invalid coordinates."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * Draw route
+     */
+
+    routeLayer =
+        L.polyline(
+            latLngs,
+            {
+
+                color: "#2563eb",
+
+                weight: 6,
+
+                opacity: 0.9,
+
+                lineCap: "round",
+
+                lineJoin: "round"
+
+            }
+        ).addTo(map);
+
+
+    /*
+     * START
+     */
+
+    const startLat =
+        Number(
+            data.start.latitude
+        );
+
+    const startLon =
+        Number(
+            data.start.longitude
+        );
+
+
+    if (
+        Number.isFinite(startLat) &&
+        Number.isFinite(startLon)
+    ) {
+
+        L.marker(
+            [
+                startLat,
+                startLon
+            ],
+            {
+                icon:
+                    createMarkerIcon(
+                        "start",
+                        "S"
+                    )
+            }
+        )
+
+        .bindPopup(`
+
+            <strong>START</strong>
+            <br><br>
+
+            ${escapeHtml(
+                data.start.display_name ||
+                data.start.query
+            )}
+
+        `)
+
+        .addTo(
+            markersLayer
+        );
+
+    }
+
+
+    /*
+     * DESTINATION
+     */
+
+    const finishLat =
+        Number(
+            data.finish.latitude
+        );
+
+    const finishLon =
+        Number(
+            data.finish.longitude
+        );
+
+
+    if (
+        Number.isFinite(finishLat) &&
+        Number.isFinite(finishLon)
+    ) {
+
+        L.marker(
+            [
+                finishLat,
+                finishLon
+            ],
+            {
+                icon:
+                    createMarkerIcon(
+                        "destination",
+                        "D"
+                    )
+            }
+        )
+
+        .bindPopup(`
+
+            <strong>DESTINATION</strong>
+            <br><br>
+
+            ${escapeHtml(
+                data.finish.display_name ||
+                data.finish.query
+            )}
+
+        `)
+
+        .addTo(
+            markersLayer
+        );
+
+    }
+
+
+    /*
+     * FUEL STOPS
+     */
+
+    if (
+        Array.isArray(
+            data.fuel_plan?.stops
+        )
+    ) {
+
+        data.fuel_plan.stops.forEach(
+            (stop, index) => {
+
+                const lat =
+                    Number(
+                        stop.latitude
+                    );
+
+                const lon =
+                    Number(
+                        stop.longitude
+                    );
+
+
+                if (
+                    !Number.isFinite(lat) ||
+                    !Number.isFinite(lon)
+                ) {
+
+                    return;
+
+                }
+
+
+                L.marker(
+                    [
+                        lat,
+                        lon
+                    ],
+                    {
+                        icon:
+                            createMarkerIcon(
+                                "fuel",
+                                index + 1
+                            )
+                    }
+                )
+
+                .bindPopup(`
+
+                    <strong>
+                        ⛽ Fuel Stop ${index + 1}
+                    </strong>
+
+                    <br><br>
+
+                    <strong>
+                        ${escapeHtml(
+                            stop.name
+                        )}
+                    </strong>
+
+                    <br>
+
+                    ${escapeHtml(
+                        stop.city
+                    )},
+                    ${escapeHtml(
+                        stop.state
+                    )}
+
+                    <br><br>
+
+                    Fuel price:
+
+                    <strong>
+                        $${Number(
+                            stop.fuel_price_per_gallon
+                        ).toFixed(3)}
+                    </strong>
+
+                    <br>
+
+                    Route mile:
+
+                    ${Number(
+                        stop.route_mile
+                    ).toFixed(1)}
+
+                    <br>
+
+                    Off route:
+
+                    ${Number(
+                        stop.distance_from_route_miles
+                    ).toFixed(2)}
+                    mi
+
+                `)
+
+                .addTo(
+                    markersLayer
+                );
+
+            }
+        );
+
+    }
+
+
+    /*
+     * FIT MAP TO ROUTE
+     */
+
+    const bounds =
+        routeLayer.getBounds();
+
+
+    if (bounds.isValid()) {
+
+        map.fitBounds(
+            bounds,
+            {
+                padding: [
+                    40,
+                    40
+                ]
+            }
+        );
+
+    }
+
+
+    /*
+     * Leaflet sometimes needs
+     * a resize after its container
+     * becomes visible.
+     */
+
+    setTimeout(
+        () => {
+
+            if (map) {
+
+                map.invalidateSize();
+
+                if (routeLayer) {
+
+                    const bounds =
+                        routeLayer.getBounds();
+
+                    if (bounds.isValid()) {
+
+                        map.fitBounds(
+                            bounds,
+                            {
+                                padding: [
+                                    40,
+                                    40
+                                ]
+                            }
+                        );
+
+                    }
+
+                }
+
+            }
+
+        },
+        300
+    );
+
+}
+
+
+function showError(message) {
+
+    errorBox.textContent =
+        message;
+
+    errorBox.style.display =
+        "block";
+
+}
+
+
+function hideError() {
+
+    errorBox.textContent =
+        "";
+
+    errorBox.style.display =
+        "none";
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(
+        value ?? ""
+    )
+
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+
+    .replace(
+        /</g,
+        "&lt;"
+    )
+
+    .replace(
+        />/g,
+        "&gt;"
+    )
+
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+</script>
+
+</body>
+</html>

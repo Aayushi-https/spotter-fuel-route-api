@@ -1,0 +1,4 @@
+Django==6.1.1
+pandas==3.0.6
+requests==2.34.2
+geonamescache==3.0.2

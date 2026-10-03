@@ -1,0 +1,7 @@
+{
+  "info": {"name": "Spotter Fuel Route API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "item": [
+    {"name":"Health","request":{"method":"GET","url":"http://127.0.0.1:8000/api/health/"}},
+    {"name":"Chicago to Denver","request":{"method":"GET","url":"http://127.0.0.1:8000/api/route/?start=Chicago%2C%20IL&finish=Denver%2C%20CO"}}
+  ]
+}
